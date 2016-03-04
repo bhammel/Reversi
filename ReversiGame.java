@@ -57,7 +57,7 @@ public class ReversiGame {
 		System.out.println(currentPlayer.getDarkOrLight() + " player (" + currentPlayer.getHumanOrCOM() + ") plays now");
 		System.out.println("Score: Light " + lightPlayer.getScore() + " - Dark " + darkPlayer.getScore());
 	}
-	
+
 	public void start() {
 		printBoard();
 		printInfo();
@@ -81,14 +81,14 @@ public class ReversiGame {
 	}
 
 	public void move(int row, int column, int color) {
-		int gain = board.update(color, row, column, sidesToChange);
+		int numChanges = board.update(color, row, column, sidesToChange);
 
 		if (color == dark) {
-			darkPlayer.addToScore(gain + 1);
-			lightPlayer.subtractFromScore(gain);
+			darkPlayer.addToScore(numChanges + 1);
+			lightPlayer.subtractFromScore(numChanges);
 		} else {
-			darkPlayer.subtractFromScore(gain);
-			lightPlayer.addToScore(gain + 1);
+			darkPlayer.subtractFromScore(numChanges);
+			lightPlayer.addToScore(numChanges + 1);
 		}
 
 		movePlayed = getMove(row, column);
@@ -124,5 +124,22 @@ public class ReversiGame {
 		}
 
 		return false;
+	}
+
+	public int tryGetColumn(String move) {
+		return Character.getNumericValue(move.charAt(0)) - Character.getNumericValue('a');
+	}
+
+	public int tryGetRow(String move) {
+		return Integer.parseInt(move.substring(1)) - 1;
+	}
+
+	public boolean validMove(int color, int row, int column) {
+		sidesToChange = board.validMove(color, row, column);
+		if (sidesToChange.isEmpty()) {
+			return false;
+		}
+
+		return true;
 	}
 }

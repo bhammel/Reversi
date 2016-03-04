@@ -249,9 +249,9 @@ public class Board {
 		board[row][column] = color;
 		addValidMoves(row, column);
 
-		int gain = 0;
+		int numChanges = 0;
 
-		// Compute gain from left disks
+		// Compute numChanges from left disks
 		if (sidesToChange.contains("Left")) {
 			for (int i = 1; i < boardSize; i++) {
 				if (board[row][column - i] == color) {
@@ -259,11 +259,11 @@ public class Board {
 				}
 
 				board[row][column - i] = color;
-				gain++;
+				numChanges++;
 			}
 		}
 
-		// Compute gain from right disks
+		// Compute numChanges from right disks
 		if (sidesToChange.contains("Right")) {
 			for (int i = 1; i < boardSize; i++) {
 				if (board[row][column + i] == color) {
@@ -271,11 +271,11 @@ public class Board {
 				}
 
 				board[row][column + i] = color;
-				gain++;
+				numChanges++;
 			}
 		}
 
-		// Compute gain from top disks
+		// Compute numChanges from top disks
 		if (sidesToChange.contains("Top")) {
 			for (int i = 1; i < boardSize; i++) {
 				if (board[row - i][column] == color) {
@@ -283,11 +283,11 @@ public class Board {
 				}
 
 				board[row - i][column] = color;
-				gain++;
+				numChanges++;
 			}
 		}
 
-		// Compute gain from bottom disks
+		// Compute numChanges from bottom disks
 		if (sidesToChange.contains("Bottom")) {
 			for (int i = 1; i < boardSize; i++) {
 				if (board[row + i][column] == color) {
@@ -295,11 +295,11 @@ public class Board {
 				}
 
 				board[row + i][column] = color;
-				gain++;
+				numChanges++;
 			}
 		}
 
-		// Compute gain from top-left disks
+		// Compute numChanges from top-left disks
 		if (sidesToChange.contains("TopLeft")) {
 			for (int i = 1; i < boardSize; i++) {
 				if (board[row - i][column - i] == color) {
@@ -307,11 +307,11 @@ public class Board {
 				}
 
 				board[row - i][column - i] = color;
-				gain++;
+				numChanges++;
 			}
 		}
 
-		// Compute gain from top-right disks
+		// Compute numChanges from top-right disks
 		if (sidesToChange.contains("TopRight")) {
 			for (int i = 1; i < boardSize; i++) {
 				if (board[row - i][column + i] == color) {
@@ -319,11 +319,11 @@ public class Board {
 				}
 
 				board[row - i][column + i] = color;
-				gain++;
+				numChanges++;
 			}
 		}
 
-		// Compute gain from bottom-left disks
+		// Compute numChanges from bottom-left disks
 		if (sidesToChange.contains("BottomLeft")) {
 			for (int i = 1; i < boardSize; i++) {
 				if (board[row + i][column - i] == color) {
@@ -331,11 +331,11 @@ public class Board {
 				}
 
 				board[row + i][column - i] = color;
-				gain++;
+				numChanges++;
 			}
 		}
 
-		// Compute gain from bottom-right disks
+		// Compute numChanges from bottom-right disks
 		if (sidesToChange.contains("BottomRight")) {
 			for (int i = 1; i < boardSize; i++) {
 				if (board[row + i][column + i] == color) {
@@ -343,10 +343,10 @@ public class Board {
 				}
 
 				board[row + i][column + i] = color;
-				gain++;
+				numChanges++;
 			}
 		}
 
-		return gain;
+		return numChanges;
 	}
 }
