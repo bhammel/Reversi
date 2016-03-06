@@ -7,23 +7,45 @@
 
 import java.util.HashSet;
 
+/*
+ * Board class - represents a Reversi board.
+ */
+
 public class Board {
 
-	// !--- Class variables ---!
+	// !---------------------------- Class variables ----------------------------!
+
+	/*
+	 * Represent empty, dark, and light disks on the board
+	 */
 	private static int empty = 0;
 	private static int dark = 1;
 	private static int light = 2;
 
-	// !--- Instance variables ---!
-	private int[][] board;
-	private int boardSize;
-	private HashSet<Integer> validMoves;
+	// !-------------------------- Instance variables --------------------------!
 
-	// !--- Constructors ---!
+	/*
+	 * The actual board as a two-dimensional int array. Each slot will hold one of
+	 * three values at any given time - empty (0), dark (1), or light (2)
+	 */
+	private int[][] board;
+
+	// The size of one side of the board
+	private int boardSize;
+
+	// Holds all current possible moves, regardless of validity
+	private HashSet<Integer> possibleMoves;
+
+	// !----------------------------- Constructors -----------------------------!
+
+	/*
+	 * Creates a new Board given its size, and sets up the initial configuration
+	 * of the board.
+	 */
 	public Board(int boardSize) {
 		this.boardSize = boardSize;
 		board = new int[boardSize][boardSize];
-		validMoves = new HashSet<Integer>();
+		possibleMoves = new HashSet<Integer>();
 
 		int one = (boardSize / 2) - 1;
 		int two = boardSize / 2;
@@ -33,16 +55,22 @@ public class Board {
 		board[two][one] = dark;
 		board[two][two] = light;
 
-		addValidMoves(one, one);
-		addValidMoves(one, two);
-		addValidMoves(two, one);
-		addValidMoves(two, two);
+		updatePossibleMoves(one, one);
+		updatePossibleMoves(one, two);
+		updatePossibleMoves(two, one);
+		updatePossibleMoves(two, two);
 	}
 
+	/*
+	 * Copy constructor - creates a new Board that is a copy of another. This is
+	 * used when performing minimax in order to maintain different possible states
+	 * of the board given different sequences of moves without affecting the
+	 * current board.
+	 */
 	public Board(Board board) {
 		boardSize = board.getSize();
 		this.board = new int[boardSize][boardSize];
-		validMoves = new HashSet<Integer>(board.getValidMoves());
+		possibleMoves = new HashSet<Integer>(board.getPossibleMoves());
 
 		int[][] otherBoard = board.getBoard();
 
@@ -51,49 +79,48 @@ public class Board {
 		}
 	}
 
-	// !--- Getters and setters ---!
+	// !-------------------------- Getters and setters --------------------------!
+
+	// Returns the board's configuration array
 	public int[][] getBoard() {
 		return board;
 	}
 
+	// Returns the board's size
 	public int getSize() {
 		return boardSize;
 	}
 
-	public HashSet<Integer> getValidMoves() {
-		return validMoves;
+	// Returns the board's current possible moves
+	public HashSet<Integer> getPossibleMoves() {
+		return possibleMoves;
 	}
 
-	// !--- Methods ---!
-	public void addValidMoves(int row, int column) {
-		validMoves.remove(Integer.valueOf(twoDimToOneDim(row, column)));
+	// !-------------------------------- Methods --------------------------------!
+
+	/*
+	 * Updates the board's current possible moves given the coordinates of a new
+	 * move.
+	 */
+	public void updatePossibleMoves(int row, int column) {
+		possibleMoves.remove(Integer.valueOf(row * boardSize + column));
 
 		for (int i = row - 1; i < row + 2; i++) {
 			for (int j = column - 1; j < column + 2; j++) {
-				if (i >= 0 && j >= 0 && i < boardSize && j < boardSize && board[i][j] == empty) {
-					validMoves.add(Integer.valueOf(twoDimToOneDim(i, j)));
+				if (i >= 0 && j >= 0 && i < boardSize && j < boardSize
+						&& board[i][j] == empty) {
+					possibleMoves.add(Integer.valueOf(i * boardSize + j));
 				}
 			}
 		}
 	}
 
-	public int twoDimToOneDim(int x, int y) {
-		return x * boardSize + y;
-	}
-
-	public int getRowFromOneDim(int x) {
-		return x / boardSize;
-	}
-
-	public int getColumnFromOneDim(int x) {
-		return x % boardSize;
-	}
-
+	// Prints out the board using basic ASCII art
 	public void print() {
 		System.out.print("  ");
 
-		for (int i = 97; i < 97 + boardSize; i++) {
-			System.out.print("   " + (char) i);
+		for (int i = 0; i < boardSize; i++) {
+			System.out.print("   " + (char) (i + 97));
 		}
 
 		System.out.println();
@@ -107,6 +134,7 @@ public class Board {
 
 		for (int i = 0; i < boardSize; i++) {
 			System.out.format("%2d |", (i + 1));
+
 			for (int j = 0; j < boardSize; j++) {
 				if (board[i][j] == dark) {
 					System.out.print(" D |");
@@ -128,126 +156,14 @@ public class Board {
 		}
 	}
 
-	public HashSet<String> validMove(int color, int row, int column) {
-		HashSet<String> sidesToChange = new HashSet<String>();
-
-		if (row < 0 || column < 0 || row > boardSize - 1 || column > boardSize - 1) {
-			return sidesToChange;
-		}
-
-		if (board[row][column] != empty) {
-			return sidesToChange;
-		}
-
-		int opponentColor;
-		if (color == dark) {
-			opponentColor = light;
-		} else {
-			opponentColor = dark;
-		}
-
-		// Check left side
-		if (column - 2 >= 0 && board[row][column - 1] == opponentColor) {
-			for (int i = 2; i < column + 1; i++) {
-				if (board[row][column - i] == empty) {
-					break;
-				} else if (board[row][column - i] == color) {
-					sidesToChange.add("Left");
-					break;
-				}
-			}
-		}
-
-		// Check right side
-		if (column + 2 < boardSize && board[row][column + 1] == opponentColor) {
-			for (int i = 2; i < boardSize - column; i++) {
-				if (board[row][column + i] == empty) {
-					break;
-				} else if (board[row][column + i] == color) {
-					sidesToChange.add("Right");
-					break;
-				}
-			}
-		}
-
-		// Check top side
-		if (row - 2 >= 0 && board[row - 1][column] == opponentColor) {
-			for (int i = 2; i < row + 1; i++) {
-				if (board[row - i][column] == empty) {
-					break;
-				} else if (board[row - i][column] == color) {
-					sidesToChange.add("Top");
-					break;
-				}
-			}
-		}
-
-		// Check bottom side
-		if (row + 2 < boardSize && board[row + 1][column] == opponentColor) {
-			for (int i = 2; i < boardSize - row; i++) {
-				if (board[row + i][column] == empty) {
-					break;
-				} else if (board[row + i][column] == color) {
-					sidesToChange.add("Bottom");
-					break;
-				}
-			}
-		}
-
-		// Check top-left corner
-		if (row - 2 >= 0 && column - 2 >= 0 && board[row - 1][column - 1] == opponentColor) {
-			for (int i = 2; i < Math.min(row + 1, column + 1); i++) {
-				if (board[row - i][column - i] == empty) {
-					break;
-				} else if (board[row - i][column - i] == color) {
-					sidesToChange.add("TopLeft");
-					break;
-				}
-			}
-		}
-
-		// Check top-right corner
-		if (row - 2 >= 0 && column + 2 < boardSize && board[row - 1][column + 1] == opponentColor) {
-			for (int i = 2; i < Math.min(row + 1, boardSize - column); i++) {
-				if (board[row - i][column + i] == empty) {
-					break;
-				} else if (board[row - i][column + i] == color) {
-					sidesToChange.add("TopRight");
-					break;
-				}
-			}
-		}
-
-		// Check bottom-left corner
-		if (row + 2 < boardSize && column - 2 >= 0 && board[row + 1][column - 1] == opponentColor) {
-			for (int i = 2; i < Math.min(boardSize - row, column + 1); i++) {
-				if (board[row + i][column - i] == empty) {
-					break;
-				} else if (board[row + i][column - i] == color) {
-					sidesToChange.add("BottomLeft");
-					break;
-				}
-			}
-		}
-
-		// Check bottom-right corner
-		if (row + 2 < boardSize && column + 2 < boardSize && board[row + 1][column + 1] == opponentColor) {
-			for (int i = 2; i < Math.min(boardSize - row, boardSize - column); i++) {
-				if (board[row + i][column + i] == empty) {
-					break;
-				} else if (board[row + i][column + i] == color) {
-					sidesToChange.add("BottomRight");
-					break;
-				}
-			}
-		}
-
-		return sidesToChange;
-	}
-
-	public int update(int color, int row, int column, HashSet<String> sidesToChange) {
+	/*
+	 * Adds a move to the board, and reverses any disks that are captured by this
+	 * move. Returns the number of disks that were reversed.
+	 */
+	public int update(int color, int row, int column,
+										HashSet<String> sidesToChange) {
 		board[row][column] = color;
-		addValidMoves(row, column);
+		updatePossibleMoves(row, column);
 
 		int numChanges = 0;
 
@@ -348,5 +264,131 @@ public class Board {
 		}
 
 		return numChanges;
+	}
+
+	/*
+	 * Determines if there are any disks that can be reversed by the player of the
+	 * given color and the given move. If so, returns which sides they are located
+	 * on; otherwise, returns an empty set.
+	 */
+	public HashSet<String> validMove(int color, int row, int column) {
+		HashSet<String> sidesToChange = new HashSet<String>();
+
+		if (row < 0 || column < 0 || row > boardSize - 1 || column > boardSize - 1) {
+			return sidesToChange;
+		}
+
+		if (board[row][column] != empty) {
+			return sidesToChange;
+		}
+
+		int opponentColor;
+		if (color == dark) {
+			opponentColor = light;
+		} else {
+			opponentColor = dark;
+		}
+
+		// Check left side
+		if (column - 2 >= 0 && board[row][column - 1] == opponentColor) {
+			for (int i = 2; i < column + 1; i++) {
+				if (board[row][column - i] == empty) {
+					break;
+				} else if (board[row][column - i] == color) {
+					sidesToChange.add("Left");
+					break;
+				}
+			}
+		}
+
+		// Check right side
+		if (column + 2 < boardSize && board[row][column + 1] == opponentColor) {
+			for (int i = 2; i < boardSize - column; i++) {
+				if (board[row][column + i] == empty) {
+					break;
+				} else if (board[row][column + i] == color) {
+					sidesToChange.add("Right");
+					break;
+				}
+			}
+		}
+
+		// Check top side
+		if (row - 2 >= 0 && board[row - 1][column] == opponentColor) {
+			for (int i = 2; i < row + 1; i++) {
+				if (board[row - i][column] == empty) {
+					break;
+				} else if (board[row - i][column] == color) {
+					sidesToChange.add("Top");
+					break;
+				}
+			}
+		}
+
+		// Check bottom side
+		if (row + 2 < boardSize && board[row + 1][column] == opponentColor) {
+			for (int i = 2; i < boardSize - row; i++) {
+				if (board[row + i][column] == empty) {
+					break;
+				} else if (board[row + i][column] == color) {
+					sidesToChange.add("Bottom");
+					break;
+				}
+			}
+		}
+
+		// Check top-left corner
+		if (row - 2 >= 0 && column - 2 >= 0
+				&& board[row - 1][column - 1] == opponentColor) {
+			for (int i = 2; i < Math.min(row + 1, column + 1); i++) {
+				if (board[row - i][column - i] == empty) {
+					break;
+				} else if (board[row - i][column - i] == color) {
+					sidesToChange.add("TopLeft");
+					break;
+				}
+			}
+		}
+
+		// Check top-right corner
+		if (row - 2 >= 0 && column + 2 < boardSize
+				&& board[row - 1][column + 1] == opponentColor) {
+			for (int i = 2; i < Math.min(row + 1, boardSize - column); i++) {
+				if (board[row - i][column + i] == empty) {
+					break;
+				} else if (board[row - i][column + i] == color) {
+					sidesToChange.add("TopRight");
+					break;
+				}
+			}
+		}
+
+		// Check bottom-left corner
+		if (row + 2 < boardSize && column - 2 >= 0
+				&& board[row + 1][column - 1] == opponentColor) {
+			for (int i = 2; i < Math.min(boardSize - row, column + 1); i++) {
+				if (board[row + i][column - i] == empty) {
+					break;
+				} else if (board[row + i][column - i] == color) {
+					sidesToChange.add("BottomLeft");
+					break;
+				}
+			}
+		}
+
+		// Check bottom-right corner
+		if (row + 2 < boardSize && column + 2 < boardSize
+				&& board[row + 1][column + 1] == opponentColor) {
+			for (int i = 2; i < Math.min(boardSize - row, boardSize - column); i++) {
+				if (board[row + i][column + i] == empty) {
+					break;
+				} else if (board[row + i][column + i] == color) {
+					sidesToChange.add("BottomRight");
+					break;
+				}
+			}
+		}
+
+		return sidesToChange;
 	}
 }

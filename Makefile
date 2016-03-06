@@ -1,6 +1,6 @@
 JC       = javac
 JFLAGS   = -g
-CLASSES  = Board.class Player.class Reversi.class ReversiGame.class
+CLASSES  = Player.class Board.class Reversi.class Main.class
 
 .SUFFIXES: .java .class
 
