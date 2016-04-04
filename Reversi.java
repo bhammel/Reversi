@@ -25,7 +25,7 @@ public class Reversi {
 	private static int light = 2;
 
 	// Specifies the depth for the minimax algorithm
-	private static int MINIMAX_DEPTH = 2;
+	private static int MINIMAX_DEPTH = 3;
 
 	// !-------------------------- Instance variables --------------------------!
 
@@ -217,13 +217,13 @@ public class Reversi {
 			int numChanges;
 			if (currentPlayerMove) {
 				numChanges = updatedBoard.update(color, row, column, sidesToChange);
-				score += numChanges + 1;
-				opponentScore -= numChanges;
+				score += numChanges + updatedBoard.getWeight(row, column) + 1;
+				opponentScore -= numChanges + updatedBoard.getWeight(row, column);
 			} else {
 				numChanges = updatedBoard.update(opponentColor, row, column,
 																				 sidesToChange);
-				score -= numChanges;
-				opponentScore += numChanges + 1;
+				score -= numChanges + updatedBoard.getWeight(row, column);
+				opponentScore += numChanges + updatedBoard.getWeight(row, column) + 1;
 			}
 		}
 

@@ -30,6 +30,12 @@ public class Board {
 	 */
 	private int[][] board;
 
+	/*
+	 * The weights of each board slot - used to prioritize edge moves over other
+	 * moves.
+	 */
+	private int[][] weights;
+
 	// The size of one side of the board
 	private int boardSize;
 
@@ -59,6 +65,25 @@ public class Board {
 		updatePossibleMoves(one, two);
 		updatePossibleMoves(two, one);
 		updatePossibleMoves(two, two);
+
+		weights = new int[boardSize][boardSize];
+
+		int current = 0;
+		while (current != boardSize - current) {
+			for (int i = current; i < boardSize - current; i++) {
+				for (int j = current; j < boardSize - current; j++) {
+					if ((i == 0 && j == 0)
+							|| (i == boardSize - 1 && j == boardSize - 1)
+							|| (i == 0 && j == boardSize - 1)
+							|| (i == boardSize - 1 && j == 0)) {
+						weights[i][j] = boardSize;
+					} else {
+						weights[i][j] = boardSize / 2 - current;
+					}
+				}
+			}
+			current++;
+		}
 	}
 
 	/*
@@ -77,6 +102,25 @@ public class Board {
 		for (int i = 0; i < boardSize; i++) {
 			System.arraycopy(otherBoard[i], 0, this.board[i], 0, boardSize);
 		}
+
+		weights = new int[boardSize][boardSize];
+
+		int current = 0;
+		while (current != boardSize - current) {
+			for (int i = current; i < boardSize - current; i++) {
+				for (int j = current; j < boardSize - current; j++) {
+					if ((i == 0 && j == 0)
+							|| (i == boardSize - 1 && j == boardSize - 1)
+							|| (i == 0 && j == boardSize - 1)
+							|| (i == boardSize - 1 && j == 0)) {
+						weights[i][j] = boardSize;
+					} else {
+						weights[i][j] = boardSize / 2 - current;
+					}
+				}
+			}
+			current++;
+		}
 	}
 
 	// !-------------------------- Getters and setters --------------------------!
@@ -94,6 +138,11 @@ public class Board {
 	// Returns the board's current possible moves
 	public HashSet<Integer> getPossibleMoves() {
 		return possibleMoves;
+	}
+
+	// Returns the associated weight at a given board location
+	public int getWeight(int row, int column) {
+		return weights[column][row];
 	}
 
 	// !-------------------------------- Methods --------------------------------!
